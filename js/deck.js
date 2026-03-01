@@ -20,7 +20,7 @@ export class Deck {
 
   deal(numPlayers) {
     this.shuffle();
-    const perPlayer = Math.floor(52 / numPlayers);
+    const perPlayer = 13; // always 13 cards per player in Tien Len
     const hands = Array.from({ length: numPlayers }, () => []);
     for (let i = 0; i < numPlayers * perPlayer; i++) {
       hands[i % numPlayers].push(this.cards[i]);

@@ -184,6 +184,8 @@ body {
   border-radius: 8px;
   border: 1px solid var(--border);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: all 0.15s;
 }
 .action-btn:hover:not(:disabled) { transform: scale(1.05); }
@@ -690,4 +692,119 @@ body {
   font-size: 0.85rem;
   color: var(--text-secondary);
   min-height: 1.2em;
+}
+
+/* ===== Mobile Responsive ===== */
+
+@media (max-width: 768px) {
+  html, body { overflow: auto; }
+
+  #header {
+    height: 40px;
+    padding: 0 10px;
+  }
+  #header h1 { font-size: 0.9rem; letter-spacing: 0.1em; }
+  .header-btn { padding: 4px 10px; font-size: 0.7rem; }
+
+  /* Player panels — compact at edges */
+  .player-panel { padding: 4px 10px; border-radius: 8px; }
+  .player-panel[data-pos="0"] { bottom: 200px; }
+  .player-panel[data-pos="1"] { left: 4px; top: 45%; }
+  .player-panel[data-pos="2"] { top: 46px; }
+  .player-panel[data-pos="3"] { right: 4px; top: 45%; }
+  .player-name { font-size: 0.7rem; }
+  .player-cards-count { font-size: 0.65rem; padding: 1px 6px; }
+  .player-status { font-size: 0.6rem; }
+
+  /* Table center — smaller */
+  #table-center { width: 260px; min-height: 100px; }
+  #trick-label { font-size: 0.7rem; }
+
+  /* Hand area — lower, compressed */
+  #my-hand { bottom: 10px; height: 120px; }
+
+  /* Actions & hint */
+  #actions { bottom: 140px; gap: 8px; }
+  .action-btn { padding: 8px 20px; font-size: 0.8rem; }
+  #combo-hint { bottom: 175px; font-size: 0.65rem; }
+
+  /* Opponent hands — tighter */
+  .opp-hand[data-pos="1"] { left: 30px; }
+  .opp-hand[data-pos="2"] { top: 50px; }
+  .opp-hand[data-pos="3"] { right: 30px; }
+
+  /* Settings panel — full width on mobile */
+  #settings-panel {
+    width: calc(100vw - 32px);
+    max-width: 400px;
+    padding: 20px;
+  }
+  .player-config { flex-wrap: wrap; }
+  .player-config input { width: 80px; }
+
+  /* Menu & overlay screens — scale down */
+  #menu-overlay h1, #setup-overlay h1 { font-size: 2rem; }
+  #menu-overlay h2, #setup-overlay h2 { font-size: 0.85rem; }
+  .menu-btn { padding: 12px 36px; font-size: 1rem; min-width: 180px; }
+  .form-group { width: 240px; }
+
+  /* Lobby */
+  #lobby-players { width: 260px; }
+  #lobby-room-code { font-size: 1.2rem; }
+
+  /* Game over */
+  #game-over-title { font-size: 1.8rem; }
+  #game-over-results { font-size: 0.95rem; }
+  #new-game-btn { padding: 10px 28px; font-size: 1rem; }
+
+  /* Handoff screen */
+  #handoff-title { font-size: 1.3rem; }
+  #handoff-player-name { font-size: 1.8rem; }
+  #handoff-ready-btn { padding: 12px 36px; font-size: 1rem; }
+
+  /* Message overlay */
+  #message-text { font-size: 1.5rem; }
+  #message-sub { font-size: 0.85rem; }
+}
+
+/* Cards responsive — separate so it applies to cards.css sizing */
+@media (max-width: 768px) {
+  .card { width: 52px; height: 74px; }
+  .card-rank { font-size: 0.7rem; }
+  .card-suit-symbol { font-size: 0.55rem; }
+  .card-center-suit { font-size: 1.2rem; }
+  .card-inner { padding: 3px; }
+
+  #my-hand .card { margin-left: -14px; }
+  #my-hand .card:hover { transform: translateY(-6px); }
+  #my-hand .card.selected { transform: translateY(-18px); }
+
+  .opp-hand .card { width: 26px; height: 36px; margin-left: -14px; }
+
+  #table-center .card { width: 50px; height: 70px; margin: 0 -6px; }
+}
+
+/* Extra small screens (phones < 480px) */
+@media (max-width: 480px) {
+  .card { width: 42px; height: 60px; }
+  .card-rank { font-size: 0.6rem; }
+  .card-suit-symbol { font-size: 0.5rem; }
+  .card-center-suit { font-size: 1rem; }
+
+  #my-hand .card { margin-left: -12px; }
+  #my-hand { bottom: 6px; height: 100px; }
+
+  .player-panel[data-pos="0"] { bottom: 165px; }
+  #actions { bottom: 110px; }
+  #combo-hint { bottom: 145px; }
+
+  .opp-hand .card { width: 22px; height: 32px; margin-left: -12px; }
+  #table-center .card { width: 42px; height: 60px; }
+  #table-center { width: 200px; min-height: 80px; }
+
+  #settings-panel { padding: 16px; width: calc(100vw - 16px); }
+  .form-group { width: 100%; }
+
+  .menu-btn { padding: 10px 24px; font-size: 0.9rem; min-width: 160px; }
+  #menu-overlay h1, #setup-overlay h1 { font-size: 1.6rem; }
 }

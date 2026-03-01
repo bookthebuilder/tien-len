@@ -965,28 +965,46 @@ class App {
     const activeDeck = document.querySelector('.deck-btn.active');
     const activeCount = document.querySelector('.count-btn.active');
 
-    this.settings.theme = activeTheme?.dataset.theme || 'dark';
-    this.settings.deckStyle = activeDeck?.dataset.deck || 'classic';
-    this.settings.numPlayers = parseInt(activeCount?.dataset.count || '4');
+    const newTheme = activeTheme?.dataset.theme || 'dark';
+    const newDeck = activeDeck?.dataset.deck || 'classic';
+    const newNumPlayers = parseInt(activeCount?.dataset.count || '4');
 
     const configs = [];
     const names = document.querySelectorAll('.cfg-name');
     const types = document.querySelectorAll('.cfg-type');
     const diffs = document.querySelectorAll('.cfg-diff');
 
-    for (let i = 0; i < this.settings.numPlayers; i++) {
+    for (let i = 0; i < newNumPlayers; i++) {
       configs.push({
         name: names[i]?.value || `Player ${i + 1}`,
         isHuman: types[i]?.value === 'human',
         difficulty: types[i]?.value === 'human' ? null : (diffs[i]?.value || 'medium'),
       });
     }
+
+    // Check if player configuration actually changed (requires restart)
+    const oldConfigs = this.settings.playerConfigs;
+    const playerConfigChanged =
+      newNumPlayers !== this.settings.numPlayers ||
+      configs.length !== oldConfigs.length ||
+      configs.some((c, i) => {
+        const o = oldConfigs[i];
+        return !o || c.name !== o.name || c.isHuman !== o.isHuman || c.difficulty !== o.difficulty;
+      });
+
+    // Apply all settings
+    this.settings.theme = newTheme;
+    this.settings.deckStyle = newDeck;
+    this.settings.numPlayers = newNumPlayers;
     this.settings.playerConfigs = configs;
     Settings.save(this.settings);
+
+    // Cosmetics apply instantly (no restart needed)
     this.applyVisuals();
     this.closeSettings();
 
-    if (this.mode !== 'online') {
+    // Only restart if player config changed and we're in a local game
+    if (playerConfigChanged && this.mode !== 'online') {
       this.startLocalGame();
     }
   }
