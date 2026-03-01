@@ -1,0 +1,20 @@
+[data-theme="wood"] {
+  --bg-primary: #3e2723;
+  --bg-secondary: #4e342e;
+  --bg-table: #3e2723;
+  --bg-overlay: rgba(62, 39, 35, 0.85);
+  --bg-image:
+    radial-gradient(ellipse at center, rgba(78,52,46,0.4) 0%, transparent 70%),
+    repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(0,0,0,0.05) 30px, rgba(0,0,0,0.05) 31px),
+    repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(139,90,60,0.08) 8px, rgba(139,90,60,0.08) 9px),
+    linear-gradient(135deg, #3e2723, #5d3f36);
+  --text-primary: #efebe9;
+  --text-secondary: #a1887f;
+  --accent: #ffab40;
+  --accent-glow: rgba(255, 171, 64, 0.3);
+  --border: #6d4c41;
+  --btn-bg: rgba(109, 76, 65, 0.5);
+  --btn-hover: rgba(141, 100, 82, 0.7);
+  --panel-bg: rgba(62, 39, 35, 0.85);
+  --badge-bg: rgba(109, 76, 65, 0.6);
+}

@@ -1,0 +1,116 @@
+/* Deal animation */
+@keyframes deal-fly {
+  from {
+    opacity: 0;
+    transform: translate(var(--deal-from-x, 0), var(--deal-from-y, 0)) scale(0.5) rotate(var(--deal-rot, 0deg));
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+}
+.card.dealing {
+  animation: deal-fly 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+}
+
+/* Card played to center */
+@keyframes play-to-center {
+  from {
+    transform: translate(var(--play-from-x, 0), var(--play-from-y, 0)) scale(1.1);
+    opacity: 0.7;
+  }
+  to {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+}
+.card.playing {
+  animation: play-to-center 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Card land bounce */
+@keyframes card-land {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.card.landed {
+  animation: card-land 0.25s ease-out;
+}
+
+/* Trick clear - slide away */
+@keyframes trick-clear {
+  from {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--clear-x, 0), var(--clear-y, -80px)) scale(0.6);
+  }
+}
+.card.clearing {
+  animation: trick-clear 0.4s ease-in forwards;
+}
+
+/* Pass indicator */
+@keyframes pass-float {
+  0% { opacity: 0; transform: translateY(0); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-40px); }
+}
+.pass-indicator.show {
+  animation: pass-float 1s ease-out forwards;
+}
+
+/* Message pop */
+@keyframes msg-pop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+#message-overlay:not(.hidden) {
+  animation: msg-pop 0.4s ease-out;
+}
+
+/* Error shake */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.shake {
+  animation: shake 0.35s ease-out;
+}
+
+/* Fade in */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fade-in { animation: fade-in 0.3s ease-out; }
+
+/* Game over entrance */
+@keyframes game-over-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+#game-over-overlay:not(.hidden) {
+  animation: game-over-in 0.5s ease-out;
+}
+
+/* Win shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.winner-text {
+  background: linear-gradient(90deg, var(--accent), #fbbf24, var(--accent));
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 2s infinite linear;
+}

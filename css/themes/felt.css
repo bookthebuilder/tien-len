@@ -1,0 +1,20 @@
+[data-theme="felt"] {
+  --bg-primary: #1a3c2a;
+  --bg-secondary: #2d5a3f;
+  --bg-table: #1a3c2a;
+  --bg-overlay: rgba(26, 60, 42, 0.85);
+  --bg-image:
+    radial-gradient(ellipse at center, rgba(45,90,63,0.5) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+    linear-gradient(135deg, #1a3c2a, #245237);
+  --text-primary: #e8f5e9;
+  --text-secondary: #81c784;
+  --accent: #ffd54f;
+  --accent-glow: rgba(255, 213, 79, 0.3);
+  --border: #2e7d4f;
+  --btn-bg: rgba(46, 125, 79, 0.5);
+  --btn-hover: rgba(56, 142, 92, 0.7);
+  --panel-bg: rgba(26, 60, 42, 0.85);
+  --badge-bg: rgba(46, 125, 79, 0.6);
+}

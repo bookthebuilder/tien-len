@@ -1,0 +1,22 @@
+[data-deck="neon"] {
+  --card-bg: #1a1a2e;
+  --card-border: #2d2d4e;
+  --card-shadow: rgba(0, 255, 255, 0.1);
+  --card-back-bg: #0a0a1a;
+  --card-back-pattern:
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,255,255,0.06) 3px, rgba(0,255,255,0.06) 6px),
+    repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(255,0,255,0.06) 3px, rgba(255,0,255,0.06) 6px),
+    linear-gradient(135deg, #0a0a1a, #16162e);
+  --card-back-border: #333366;
+  --card-red: #ff2d95;
+  --card-black: #00e5ff;
+  --card-font: 'Consolas', 'Courier New', monospace;
+  --card-radius: 6px;
+}
+
+[data-deck="neon"] .card-inner {
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.15), inset 0 0 12px rgba(0, 0, 0, 0.3);
+}
+[data-deck="neon"] .card.selected .card-inner {
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4), inset 0 0 8px rgba(0, 0, 0, 0.2);
+}

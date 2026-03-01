@@ -1,0 +1,16 @@
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-table: #0c1222;
+  --bg-overlay: rgba(15, 23, 42, 0.85);
+  --bg-image: radial-gradient(ellipse at center, #162032 0%, #0c1222 70%);
+  --text-primary: #e2e8f0;
+  --text-secondary: #64748b;
+  --accent: #60a5fa;
+  --accent-glow: rgba(96, 165, 250, 0.3);
+  --border: #334155;
+  --btn-bg: rgba(51, 65, 85, 0.6);
+  --btn-hover: rgba(71, 85, 105, 0.8);
+  --panel-bg: rgba(30, 41, 59, 0.8);
+  --badge-bg: rgba(51, 65, 85, 0.8);
+}

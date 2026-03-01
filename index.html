@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-deck="classic">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tiến Lên - Vietnamese Poker</title>
+  <link rel="stylesheet" href="css/themes/dark.css">
+  <link rel="stylesheet" href="css/themes/felt.css">
+  <link rel="stylesheet" href="css/themes/wood.css">
+  <link rel="stylesheet" href="css/decks/classic.css">
+  <link rel="stylesheet" href="css/decks/neon.css">
+  <link rel="stylesheet" href="css/decks/vintage.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Header -->
+    <div id="header">
+      <h1>Tiến Lên</h1>
+      <div id="header-right">
+        <span id="score-display" style="font-size:0.8rem;color:var(--text-secondary)"></span>
+        <button class="header-btn" id="settings-btn">&#9881; Settings</button>
+      </div>
+    </div>
+
+    <!-- Player panels -->
+    <div class="player-panel" data-pos="0" id="panel-0"></div>
+    <div class="player-panel" data-pos="1" id="panel-1"></div>
+    <div class="player-panel" data-pos="2" id="panel-2"></div>
+    <div class="player-panel" data-pos="3" id="panel-3"></div>
+
+    <!-- Opponent hands -->
+    <div class="opp-hand" data-pos="1" id="opp-hand-1"></div>
+    <div class="opp-hand" data-pos="2" id="opp-hand-2"></div>
+    <div class="opp-hand" data-pos="3" id="opp-hand-3"></div>
+
+    <!-- Center table -->
+    <div id="trick-label"></div>
+    <div id="table-center"></div>
+
+    <!-- My hand -->
+    <div id="my-hand"></div>
+
+    <!-- Combo hint -->
+    <div id="combo-hint"></div>
+
+    <!-- Action buttons -->
+    <div id="actions">
+      <button class="action-btn" id="pass-btn">Pass</button>
+      <button class="action-btn" id="play-btn">Play</button>
+    </div>
+
+    <!-- Message overlay -->
+    <div id="message-overlay" class="hidden">
+      <div id="message-text"></div>
+      <div id="message-sub"></div>
+    </div>
+
+    <!-- Game over overlay -->
+    <div id="game-over-overlay" class="hidden">
+      <div id="game-over-title"></div>
+      <div id="game-over-results"></div>
+      <button id="new-game-btn">Play Again</button>
+    </div>
+
+    <!-- Handoff screen -->
+    <div id="handoff-overlay" class="hidden">
+      <div id="handoff-title">Pass the device to</div>
+      <div id="handoff-player-name"></div>
+      <button id="handoff-ready-btn">Ready</button>
+    </div>
+
+    <!-- Settings overlay -->
+    <div id="settings-overlay" class="hidden">
+      <div id="settings-panel">
+        <h2>Settings</h2>
+
+        <div class="settings-section">
+          <h3>Background</h3>
+          <div class="theme-options">
+            <button class="theme-btn" data-theme="dark">Dark</button>
+            <button class="theme-btn" data-theme="felt">Felt</button>
+            <button class="theme-btn" data-theme="wood">Wood</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Card Style</h3>
+          <div class="deck-options">
+            <button class="deck-btn" data-deck="classic">Classic</button>
+            <button class="deck-btn" data-deck="neon">Neon</button>
+            <button class="deck-btn" data-deck="vintage">Vintage</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Players</h3>
+          <div class="player-count-options">
+            <button class="count-btn" data-count="2">2</button>
+            <button class="count-btn" data-count="3">3</button>
+            <button class="count-btn" data-count="4">4</button>
+          </div>
+          <div id="player-configs"></div>
+        </div>
+
+        <div id="settings-actions">
+          <button id="cancel-settings">Cancel</button>
+          <button id="save-settings">Save & New Game</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="menu-overlay">
+      <h1>Tiến Lên</h1>
+      <h2>Vietnamese Poker</h2>
+      <div class="menu-buttons">
+        <button class="menu-btn" id="local-play-btn">Local Play</button>
+        <button class="menu-btn" id="create-room-btn">Create Room</button>
+        <button class="menu-btn" id="join-room-btn">Join Room</button>
+      </div>
+    </div>
+
+    <!-- Create Room Screen -->
+    <div id="create-overlay" class="hidden">
+      <h2>Create Room</h2>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="create-name" placeholder="Enter name" value="Host" maxlength="12">
+      </div>
+      <div class="form-group">
+        <label>Players</label>
+        <div class="player-count-options">
+          <button class="mp-count-btn active" data-count="2">2</button>
+          <button class="mp-count-btn" data-count="3">3</button>
+          <button class="mp-count-btn" data-count="4">4</button>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="menu-btn secondary" id="create-back-btn">Back</button>
+        <button class="menu-btn" id="create-go-btn">Create</button>
+      </div>
+    </div>
+
+    <!-- Join Room Screen -->
+    <div id="join-overlay" class="hidden">
+      <h2>Join Room</h2>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="join-name" placeholder="Enter name" value="Player" maxlength="12">
+      </div>
+      <div class="form-group">
+        <label>Room Code</label>
+        <input type="text" id="join-code" placeholder="ABCD" maxlength="4" class="room-code-input">
+      </div>
+      <div id="join-error" class="join-error-text"></div>
+      <div class="form-actions">
+        <button class="menu-btn secondary" id="join-back-btn">Back</button>
+        <button class="menu-btn" id="join-go-btn">Join</button>
+      </div>
+    </div>
+
+    <!-- Lobby Screen -->
+    <div id="lobby-overlay" class="hidden">
+      <h2>Room: <span id="lobby-room-code"></span></h2>
+      <div id="lobby-share">Share this code with friends</div>
+      <div id="lobby-players"></div>
+      <div id="lobby-status"></div>
+      <div class="form-actions">
+        <button class="menu-btn secondary" id="lobby-leave-btn">Leave</button>
+        <button class="menu-btn" id="lobby-ready-btn">Ready</button>
+        <button class="menu-btn hidden" id="lobby-start-btn">Start Game</button>
+      </div>
+    </div>
+
+    <!-- Setup screen (local play) -->
+    <div id="setup-overlay" class="hidden">
+      <h1>Tiến Lên</h1>
+      <h2>Local Play</h2>
+      <button id="start-game-btn">Start Game</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

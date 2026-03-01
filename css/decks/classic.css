@@ -1,0 +1,15 @@
+[data-deck="classic"] {
+  --card-bg: #ffffff;
+  --card-border: #d1d5db;
+  --card-shadow: rgba(0, 0, 0, 0.15);
+  --card-back-bg: #1e40af;
+  --card-back-pattern:
+    repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.08) 4px, rgba(255,255,255,0.08) 8px),
+    repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(255,255,255,0.08) 4px, rgba(255,255,255,0.08) 8px),
+    linear-gradient(135deg, #1e40af, #1e3a8a);
+  --card-back-border: #1e3a8a;
+  --card-red: #dc2626;
+  --card-black: #1f2937;
+  --card-font: 'Segoe UI', system-ui, sans-serif;
+  --card-radius: 8px;
+}

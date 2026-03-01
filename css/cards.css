@@ -1,0 +1,123 @@
+/* Card rendering */
+.card {
+  width: 72px;
+  height: 100px;
+  border-radius: var(--card-radius, 8px);
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.2s,
+              opacity 0.3s;
+  will-change: transform;
+}
+
+.card-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--card-bg, #fff);
+  border: 1.5px solid var(--card-border, #d1d5db);
+  box-shadow: 0 2px 6px var(--card-shadow, rgba(0,0,0,0.15));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Face-down card */
+.card.face-down .card-inner {
+  background: var(--card-back-bg, #1e40af);
+  background-image: var(--card-back-pattern, none);
+  border-color: var(--card-back-border, #1e3a8a);
+}
+.card.face-down .card-corner,
+.card.face-down .card-center-suit { display: none; }
+
+/* Card corners */
+.card-corner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+.card-corner.bottom-right {
+  align-self: flex-end;
+  transform: rotate(180deg);
+}
+.card-rank {
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--card-font, 'Segoe UI', system-ui, sans-serif);
+}
+.card-suit-symbol {
+  font-size: 0.7rem;
+}
+
+/* Center suit display */
+.card-center-suit {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.6rem;
+}
+
+/* Suit colors */
+.card[data-suit="hearts"] .card-rank,
+.card[data-suit="diamonds"] .card-rank,
+.card[data-suit="hearts"] .card-suit-symbol,
+.card[data-suit="diamonds"] .card-suit-symbol,
+.card[data-suit="hearts"] .card-center-suit,
+.card[data-suit="diamonds"] .card-center-suit {
+  color: var(--card-red, #dc2626);
+}
+.card[data-suit="spades"] .card-rank,
+.card[data-suit="clubs"] .card-rank,
+.card[data-suit="spades"] .card-suit-symbol,
+.card[data-suit="clubs"] .card-suit-symbol,
+.card[data-suit="spades"] .card-center-suit,
+.card[data-suit="clubs"] .card-center-suit {
+  color: var(--card-black, #1f2937);
+}
+
+/* Selection & hover (human hand) */
+#my-hand .card:hover {
+  transform: translateY(-8px);
+  z-index: 10;
+}
+#my-hand .card.selected {
+  transform: translateY(-24px);
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+#my-hand .card.selected .card-inner {
+  border-color: var(--accent);
+}
+
+/* Opponent mini-cards */
+.opp-hand .card {
+  width: 36px;
+  height: 50px;
+  margin-left: -18px;
+  cursor: default;
+}
+.opp-hand .card:first-child { margin-left: 0; }
+.opp-hand .card .card-inner {
+  padding: 2px;
+}
+
+/* Table cards (center) */
+#table-center .card {
+  width: 68px;
+  height: 94px;
+  cursor: default;
+  margin: 0 -8px;
+}
+
+/* Hand card overlap */
+#my-hand .card {
+  margin-left: -16px;
+}
+#my-hand .card:first-child { margin-left: 0; }
