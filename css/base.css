@@ -697,7 +697,7 @@ body {
 /* ===== Mobile Responsive ===== */
 
 @media (max-width: 768px) {
-  html, body { overflow: auto; }
+  html, body { overflow-x: hidden; overflow-y: auto; }
 
   #header {
     height: 40px;
@@ -720,8 +720,8 @@ body {
   #table-center { width: 260px; min-height: 100px; }
   #trick-label { font-size: 0.7rem; }
 
-  /* Hand area — lower, compressed */
-  #my-hand { bottom: 10px; height: 120px; }
+  /* Hand area — lower, compressed, constrained to viewport */
+  #my-hand { bottom: 10px; height: 120px; max-width: calc(100vw - 16px); }
 
   /* Actions & hint */
   #actions { bottom: 140px; gap: 8px; }
@@ -792,7 +792,7 @@ body {
   .card-center-suit { font-size: 1rem; }
 
   #my-hand .card { margin-left: -12px; }
-  #my-hand { bottom: 6px; height: 100px; }
+  #my-hand { bottom: 6px; height: 100px; max-width: calc(100vw - 12px); }
 
   .player-panel[data-pos="0"] { bottom: 165px; }
   #actions { bottom: 110px; }

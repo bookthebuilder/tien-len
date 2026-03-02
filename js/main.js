@@ -144,6 +144,17 @@ class App {
       this.renderMyHand();
     });
 
+    // Re-layout hand on resize/orientation change
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (this.gs.phase === GAME_PHASES.PLAYING) {
+          this.renderMyHand();
+        }
+      }, 150);
+    });
+
     // Keyboard
     document.addEventListener('keydown', (e) => {
       if (this.gs.phase !== GAME_PHASES.PLAYING) return;
@@ -622,15 +633,47 @@ class App {
     const player = this.gs.players[this.humanPlayerIndex];
     if (!player) return;
 
+    const margin = this._calcHandMargin(player.hand.length);
+
     player.hand.forEach((card, idx) => {
       const el = this.createCardElement(card, false);
       if (this.selectedCards.some(c => c.id === card.id)) {
         el.classList.add('selected');
       }
+      if (idx > 0 && margin !== null) {
+        el.style.marginLeft = `${margin}px`;
+      }
       el.style.animationDelay = `${idx * 30}ms`;
       el.addEventListener('click', () => this.toggleCardSelection(card));
       container.appendChild(el);
     });
+  }
+
+  _calcHandMargin(numCards) {
+    if (numCards <= 1) return null;
+
+    const vw = window.innerWidth;
+    const padding = 16;
+    const availWidth = vw - padding;
+
+    // Card width and default margin must match CSS breakpoints
+    let cardWidth, defaultMargin;
+    if (vw <= 480) {
+      cardWidth = 42; defaultMargin = -12;
+    } else if (vw <= 768) {
+      cardWidth = 52; defaultMargin = -14;
+    } else {
+      cardWidth = 72; defaultMargin = -16;
+    }
+
+    const totalWidth = cardWidth + (numCards - 1) * (cardWidth + defaultMargin);
+    if (totalWidth <= availWidth) return null; // CSS default fits fine
+
+    // Calculate tighter overlap needed to fit
+    const neededMargin = (availWidth - cardWidth) / (numCards - 1) - cardWidth;
+
+    // Don't overlap more than 75% of card width (keep cards recognizable)
+    return Math.max(-(cardWidth * 0.75), neededMargin);
   }
 
   renderOppHands() {
@@ -818,10 +861,15 @@ class App {
     const player = this.gs.players[this.humanPlayerIndex];
     if (!player) return;
 
+    const margin = this._calcHandMargin(player.hand.length);
+
     for (let i = 0; i < player.hand.length; i++) {
       const card = player.hand[i];
       const el = this.createCardElement(card, false);
       el.classList.add('dealing');
+      if (i > 0 && margin !== null) {
+        el.style.marginLeft = `${margin}px`;
+      }
       el.style.setProperty('--deal-from-y', '-200px');
       el.style.setProperty('--deal-from-x', `${(i - 6) * -15}px`);
       el.style.animationDelay = `${i * 60}ms`;
