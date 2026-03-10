@@ -1,5 +1,6 @@
 {
   "name": "tien-len",
   "main": "party/server.js",
-  "compatibilityDate": "2024-12-01"
+  "compatibilityDate": "2024-12-01",
+  "serve": "."
 }

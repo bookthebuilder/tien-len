@@ -156,13 +156,13 @@ body {
   z-index: 20;
 }
 .opp-hand[data-pos="1"] {
-  left: 60px; top: 50%; transform: translateY(-50%) rotate(90deg);
+  left: 60px; top: 55%; transform: translateY(-50%) rotate(90deg);
 }
 .opp-hand[data-pos="2"] {
   top: 60px; left: 50%; transform: translateX(-50%);
 }
 .opp-hand[data-pos="3"] {
-  right: 60px; top: 50%; transform: translateY(-50%) rotate(-90deg);
+  right: 60px; top: 55%; transform: translateY(-50%) rotate(-90deg);
 }
 
 /* Action buttons */

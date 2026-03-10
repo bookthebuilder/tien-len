@@ -6,12 +6,13 @@ export class HandAnalyzer {
   // Decompose hand into optimal grouping of combos (fewest plays)
   static decompose(hand) {
     if (hand.length === 0) return [];
-    const best = { combos: null, count: Infinity };
+    const best = { combos: null, count: Infinity, iterations: 0 };
     this._decompose(hand, [], best);
     return best.combos || hand.map(c => classify([c]));
   }
 
   static _decompose(remaining, current, best) {
+    if (best.iterations++ > 500) return; // global cap
     if (remaining.length === 0) {
       if (current.length < best.count) {
         best.count = current.length;
@@ -30,7 +31,8 @@ export class HandAnalyzer {
     const tried = new Set();
     let attempts = 0;
     for (const combo of multiCard) {
-      if (attempts > 30) break; // cap search
+      if (attempts > 20) break; // cap search per level
+      if (best.iterations > 500) break;
       const key = combo.cards.map(c => c.id).sort().join(',');
       if (tried.has(key)) continue;
       tried.add(key);
