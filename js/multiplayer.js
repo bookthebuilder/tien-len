@@ -1,5 +1,8 @@
-import { getSupabase } from './supabase.js';
 import { bus } from './events.js';
+
+const PARTY_HOST = window.location.hostname === 'localhost'
+  ? 'localhost:1999'
+  : 'tien-len.bookthebuilder.partykit.dev';
 
 function generateRoomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no ambiguous chars
@@ -14,224 +17,153 @@ function generatePlayerId() {
 
 export class MultiplayerManager {
   constructor() {
-    this.supabase = null;
-    this.channel = null;
+    this.socket = null;
     this.roomCode = null;
     this.playerId = generatePlayerId();
     this.playerName = 'Player';
     this.isHost = false;
-    this.players = []; // { id, name, seat, isReady }
+    this.players = [];
     this.maxPlayers = 4;
-    this.onStateUpdate = null; // callback
-    this.onLobbyUpdate = null; // callback
-    this.onGameAction = null;  // callback
-  }
-
-  async init() {
-    this.supabase = await getSupabase();
+    this.onStateUpdate = null;
+    this.onLobbyUpdate = null;
+    this.onGameAction = null;
   }
 
   // --- HOST: Create Room ---
   async createRoom(playerName, maxPlayers) {
-    await this.init();
     this.playerName = playerName;
     this.maxPlayers = maxPlayers;
     this.isHost = true;
     this.roomCode = generateRoomCode();
+    this.players = [];
 
-    this.players = [{
+    await this._connect();
+    this._send('join-request', {
       id: this.playerId,
       name: playerName,
-      seat: 0,
-      isReady: false,
-      isHost: true,
-    }];
-
-    await this._joinChannel();
-    this._broadcastLobby();
+      maxPlayers,
+    });
     return this.roomCode;
   }
 
   // --- CLIENT: Join Room ---
   async joinRoom(roomCode, playerName) {
-    await this.init();
     this.playerName = playerName;
     this.roomCode = roomCode.toUpperCase();
     this.isHost = false;
 
-    await this._joinChannel();
-
-    // Request current lobby state from host
-    this.channel.send({
-      type: 'broadcast',
-      event: 'join-request',
-      payload: { id: this.playerId, name: playerName },
+    await this._connect();
+    this._send('join-request', {
+      id: this.playerId,
+      name: playerName,
     });
   }
 
-  async _joinChannel() {
-    if (this.channel) {
-      await this.supabase.removeChannel(this.channel);
+  async _connect() {
+    if (this.socket) {
+      this.socket.close();
+      this.socket = null;
     }
 
-    this.channel = this.supabase.channel(`room:${this.roomCode}`, {
-      config: { broadcast: { self: true } },
-    });
+    const { default: PartySocket } = await import('https://esm.sh/partysocket@0.0.25');
 
-    // Listen for lobby updates
-    this.channel.on('broadcast', { event: 'lobby-update' }, ({ payload }) => {
-      this.players = payload.players;
-      this.maxPlayers = payload.maxPlayers;
-      this.onLobbyUpdate?.(this.players, this.maxPlayers);
-    });
-
-    // Listen for join requests (host only)
-    this.channel.on('broadcast', { event: 'join-request' }, ({ payload }) => {
-      if (!this.isHost) return;
-      // Add player if room not full
-      if (this.players.length >= this.maxPlayers) {
-        this.channel.send({
-          type: 'broadcast',
-          event: 'join-rejected',
-          payload: { id: payload.id, reason: 'Room is full' },
-        });
-        return;
-      }
-      if (this.players.some(p => p.id === payload.id)) return; // already in
-
-      const seat = this._nextAvailableSeat();
-      this.players.push({
-        id: payload.id,
-        name: payload.name,
-        seat,
-        isReady: false,
-        isHost: false,
+    return new Promise((resolve, reject) => {
+      this.socket = new PartySocket({
+        host: PARTY_HOST,
+        room: this.roomCode,
       });
-      this._broadcastLobby();
-    });
 
-    // Listen for join rejection (client only)
-    this.channel.on('broadcast', { event: 'join-rejected' }, ({ payload }) => {
-      if (payload.id === this.playerId) {
+      this.socket.addEventListener('open', () => resolve());
+      this.socket.addEventListener('error', (e) => reject(e));
+
+      this.socket.addEventListener('close', () => {
+        bus.emit('mp-disconnected', {});
+      });
+
+      this.socket.addEventListener('message', (e) => {
+        let data;
+        try {
+          data = JSON.parse(e.data);
+        } catch {
+          return;
+        }
+        this._handleMessage(data);
+      });
+    });
+  }
+
+  _handleMessage({ event, payload }) {
+    switch (event) {
+      case 'lobby-update':
+        this.players = payload.players;
+        this.maxPlayers = payload.maxPlayers;
+        // Derive isHost from server state
+        const me = this.players.find(p => p.id === this.playerId);
+        if (me) this.isHost = me.isHost;
+        this.onLobbyUpdate?.(this.players, this.maxPlayers);
+        break;
+      case 'join-rejected':
         bus.emit('mp-error', { message: payload.reason });
-      }
-    });
-
-    // Listen for ready toggle
-    this.channel.on('broadcast', { event: 'player-ready' }, ({ payload }) => {
-      if (!this.isHost) return;
-      const p = this.players.find(pl => pl.id === payload.id);
-      if (p) {
-        p.isReady = payload.ready;
-        this._broadcastLobby();
-      }
-    });
-
-    // Listen for game start (from host)
-    this.channel.on('broadcast', { event: 'game-start' }, ({ payload }) => {
-      this.onGameAction?.('game-start', payload);
-    });
-
-    // Listen for game state sync (host broadcasts full state)
-    this.channel.on('broadcast', { event: 'game-state' }, ({ payload }) => {
-      if (this.isHost) return; // host doesn't need its own broadcast
-      this.onStateUpdate?.(payload);
-    });
-
-    // Listen for player actions (all clients process for state sync)
-    this.channel.on('broadcast', { event: 'player-action' }, ({ payload }) => {
-      this.onGameAction?.('player-action', payload);
-    });
-
-    // Listen for player disconnect
-    this.channel.on('broadcast', { event: 'player-leave' }, ({ payload }) => {
-      if (!this.isHost) return;
-      this.players = this.players.filter(p => p.id !== payload.id);
-      this._broadcastLobby();
-    });
-
-    // Listen for chat/messages
-    this.channel.on('broadcast', { event: 'chat' }, ({ payload }) => {
-      bus.emit('mp-chat', payload);
-    });
-
-    await this.channel.subscribe();
-  }
-
-  _nextAvailableSeat() {
-    const taken = new Set(this.players.map(p => p.seat));
-    for (let i = 0; i < this.maxPlayers; i++) {
-      if (!taken.has(i)) return i;
+        this.socket?.close();
+        this.socket = null;
+        break;
+      case 'game-start':
+        this.onGameAction?.('game-start', payload);
+        break;
+      case 'game-state':
+        this.onStateUpdate?.(payload);
+        break;
+      case 'player-action':
+        this.onGameAction?.('player-action', payload);
+        break;
+      case 'chat':
+        bus.emit('mp-chat', payload);
+        break;
     }
-    return this.players.length;
   }
 
-  _broadcastLobby() {
-    this.channel?.send({
-      type: 'broadcast',
-      event: 'lobby-update',
-      payload: { players: this.players, maxPlayers: this.maxPlayers },
-    });
+  _send(event, payload) {
+    if (this.socket?.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify({ event, payload }));
+    }
   }
 
   // --- Lobby Actions ---
 
   toggleReady() {
-    const me = this.players.find(p => p.id === this.playerId);
-    if (!me) return;
-    this.channel?.send({
-      type: 'broadcast',
-      event: 'player-ready',
-      payload: { id: this.playerId, ready: !me.isReady },
-    });
-    // Optimistic update for host
-    if (this.isHost) {
-      me.isReady = !me.isReady;
-      this._broadcastLobby();
-    }
+    this._send('player-ready', { id: this.playerId });
   }
 
-  // Host starts the game
   startGame(gameConfig) {
     if (!this.isHost) return;
-    this.channel?.send({
-      type: 'broadcast',
-      event: 'game-start',
-      payload: gameConfig,
-    });
+    this._send('game-start', gameConfig);
   }
 
   // --- In-Game Actions ---
 
-  // Client sends an action to host
   sendAction(action) {
-    this.channel?.send({
-      type: 'broadcast',
-      event: 'player-action',
-      payload: { id: this.playerId, ...action },
-    });
+    this._send('player-action', { id: this.playerId, ...action });
   }
 
-  // Host broadcasts full game state to all clients
   broadcastState(state) {
-    this.channel?.send({
-      type: 'broadcast',
-      event: 'game-state',
-      payload: state,
-    });
+    this._send('game-state', state);
+  }
+
+  // --- New Game (back to lobby) ---
+
+  resetLobby() {
+    if (this.isHost) {
+      this._send('new-game', {});
+    }
   }
 
   // --- Cleanup ---
 
   async leave() {
-    if (this.channel) {
-      this.channel.send({
-        type: 'broadcast',
-        event: 'player-leave',
-        payload: { id: this.playerId },
-      });
-      await this.supabase.removeChannel(this.channel);
-      this.channel = null;
+    if (this.socket) {
+      this._send('player-leave', { id: this.playerId });
+      this.socket.close();
+      this.socket = null;
     }
     this.roomCode = null;
     this.players = [];

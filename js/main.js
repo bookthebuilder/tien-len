@@ -22,11 +22,13 @@ class App {
     this.humanPlayerIndex = 0;
     this.multipleHumans = false;
     this.mode = 'menu'; // 'menu' | 'local' | 'online'
+    this._prevPlayerIds = new Set();
 
     this.applyVisuals();
     this.bindEvents();
     this.bindUI();
     this.updateScoreDisplay();
+    this._setupScreenTransitions();
   }
 
   applyVisuals() {
@@ -47,6 +49,11 @@ class App {
     bus.on('instant-win', (data) => this.onInstantWin(data));
     bus.on('mp-error', (data) => {
       $('join-error').textContent = data.message;
+    });
+    bus.on('mp-disconnected', () => {
+      if (this.mode === 'online') {
+        this.showToast('Connection lost', 'error');
+      }
     });
   }
 
@@ -92,23 +99,34 @@ class App {
     $('lobby-leave-btn').addEventListener('click', () => this.onLeaveLobby());
     $('lobby-ready-btn').addEventListener('click', () => this.mp.toggleReady());
     $('lobby-start-btn').addEventListener('click', () => this.onHostStartGame());
+    $('lobby-copy-btn').addEventListener('click', () => {
+      navigator.clipboard.writeText(this.mp.roomCode).then(() => {
+        const btn = $('lobby-copy-btn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
 
     // --- Game actions ---
     $('play-btn').addEventListener('click', () => this.onPlayClick());
     $('pass-btn').addEventListener('click', () => this.onPassClick());
 
-    // --- New game ---
+    // --- New game / back to menu ---
     $('new-game-btn').addEventListener('click', () => {
       $('game-over-overlay').classList.add('hidden');
       if (this.mode === 'online') {
         this.showScreen('lobby-overlay');
-        // Reset ready states
-        this.mp.players.forEach(p => p.isReady = false);
-        this.mp._broadcastLobby();
-        this.renderLobby(this.mp.players, this.mp.maxPlayers);
+        this.mp.resetLobby();
       } else {
         this.startLocalGame();
       }
+    });
+    $('back-menu-btn').addEventListener('click', async () => {
+      $('game-over-overlay').classList.add('hidden');
+      if (this.mode === 'online') await this.mp.leave();
+      this.mode = 'menu';
+      this.showScreen('menu-overlay');
     });
 
     // --- Settings ---
@@ -244,6 +262,22 @@ class App {
   // ========== LOBBY ==========
 
   renderLobby(players, maxPlayers) {
+    // Toast on player join/leave
+    const newIds = new Set(players.map(p => p.id));
+    if (this._prevPlayerIds && this._prevPlayerIds.size > 0) {
+      for (const p of players) {
+        if (!this._prevPlayerIds.has(p.id) && p.id !== this.mp.playerId) {
+          this.showToast(`${p.name} joined`);
+        }
+      }
+      for (const id of this._prevPlayerIds) {
+        if (!newIds.has(id) && id !== this.mp.playerId) {
+          this.showToast('A player left', 'warn');
+        }
+      }
+    }
+    this._prevPlayerIds = newIds;
+
     const container = $('lobby-players');
     container.innerHTML = '';
 
@@ -467,6 +501,7 @@ class App {
       // In online mode, only show actions if it's my turn
       if (playerIndex === this.humanPlayerIndex) {
         this.renderMyHand();
+        this.showTurnBanner();
       }
       return;
     }
@@ -765,6 +800,7 @@ class App {
       [COMBO_TYPES.QUAD]: 'Four of a Kind',
       [COMBO_TYPES.STRAIGHT]: `Straight (${combo.length})`,
       [COMBO_TYPES.DOUBLE_SEQ]: `Double Sequence (${combo.length / 2} pairs)`,
+      [COMBO_TYPES.TRIPLE_SEQ]: `Triple Sequence (${combo.length / 3} triples)`,
     };
     const beats = canBeat(this.gs.currentTrick, combo);
     hint.textContent = names[combo.type] + (this.gs.currentTrick ? (beats ? ' \u2714' : ' \u2718') : '');
@@ -1010,7 +1046,35 @@ class App {
   }
 
   updateScoreDisplay() {
-    $('score-display').textContent = `W: ${this.scores.wins} | L: ${this.scores.losses} | G: ${this.scores.games}`;
+    $('score-display').textContent = `${this.scores.wins}W ${this.scores.losses}L`;
+  }
+
+  // ========== TURN BANNER ==========
+
+  showTurnBanner() {
+    const banner = $('turn-banner');
+    banner.classList.remove('hidden');
+    clearTimeout(this._turnBannerTimer);
+    this._turnBannerTimer = setTimeout(() => banner.classList.add('hidden'), 2000);
+  }
+
+  // ========== TOASTS ==========
+
+  showToast(message, type = 'info') {
+    const container = $('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.addEventListener('transitionend', () => toast.remove());
+    }, 3000);
+  }
+
+  _setupScreenTransitions() {
+    // Future: add transition hooks between screens
   }
 }
 

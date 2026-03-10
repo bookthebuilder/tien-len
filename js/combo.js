@@ -43,6 +43,8 @@ export function classify(cards) {
   // Length 5+
   if (isStraight(sorted)) return new Combo(sorted, COMBO_TYPES.STRAIGHT);
   if (isDoubleSequence(sorted)) return new Combo(sorted, COMBO_TYPES.DOUBLE_SEQ);
+  if (len >= 9 && len % 3 === 0 && isTripleSequence(sorted))
+    return new Combo(sorted, COMBO_TYPES.TRIPLE_SEQ);
   return null;
 }
 
@@ -80,14 +82,28 @@ function isDoubleSequence(cards) {
   return true;
 }
 
+function isTripleSequence(cards) {
+  if (cards.length < 9 || cards.length % 3 !== 0) return false;
+  if (cards.some(c => c.isTwo)) return false;
+  const byRank = groupBy(cards, c => c.rankValue);
+  for (const [, group] of byRank) {
+    if (group.length !== 3) return false;
+  }
+  const rankVals = [...byRank.keys()].sort((a, b) => a - b);
+  for (let i = 1; i < rankVals.length; i++) {
+    if (rankVals[i] !== rankVals[i - 1] + 1) return false;
+  }
+  return true;
+}
+
 // Can candidate beat existing combo? Returns true/false.
 // existing can be null (leading a new trick — any valid combo is fine).
 export function canBeat(existing, candidate) {
   if (!candidate) return false;
   if (!existing) return true; // leading
 
-  // 2-chop rules
-  if (is2Combo(existing)) {
+  // 2-chop rules (or re-chopping a chop)
+  if (is2Combo(existing) || existing.isChop) {
     return canChop(existing, candidate);
   }
 
@@ -97,7 +113,7 @@ export function canBeat(existing, candidate) {
   return candidate.topValue > existing.topValue;
 }
 
-function is2Combo(combo) {
+export function is2Combo(combo) {
   if (combo.type === COMBO_TYPES.SINGLE && combo.topCard.isTwo) return true;
   if (combo.type === COMBO_TYPES.PAIR && combo.topCard.isTwo) return true;
   if (combo.type === COMBO_TYPES.TRIPLE && combo.topCard.isTwo) return true;
@@ -131,7 +147,19 @@ function canChop(twosCombo, candidate) {
   // A triple of 2s can be beaten by:
   // - A double sequence of 5+ pairs (length >= 10)
   if (twosCombo.type === COMBO_TYPES.TRIPLE) {
+    if (candidate.type === COMBO_TYPES.QUAD) return true;
     if (candidate.type === COMBO_TYPES.DOUBLE_SEQ && candidate.length >= 10) return true;
+    return false;
+  }
+
+  // A DOUBLE_SEQ played as a chop can be beaten by:
+  // - A DOUBLE_SEQ of same length with higher top value
+  // - A QUAD where the top card is a 2 (double chop)
+  if (twosCombo.type === COMBO_TYPES.DOUBLE_SEQ) {
+    if (candidate.type === COMBO_TYPES.DOUBLE_SEQ &&
+        candidate.length === twosCombo.length &&
+        candidate.topValue > twosCombo.topValue) return true;
+    if (candidate.type === COMBO_TYPES.QUAD && candidate.topCard.isTwo) return true;
     return false;
   }
 
@@ -214,6 +242,20 @@ export function findAllCombos(hand) {
     }
   }
 
+  // Triple sequences (3+ consecutive triples, no 2s)
+  const triplableRanks = nonTwoRanks.filter(([, group]) => group.length >= 3);
+  for (let startIdx = 0; startIdx < triplableRanks.length; startIdx++) {
+    let endIdx = startIdx;
+    while (endIdx + 1 < triplableRanks.length &&
+           triplableRanks[endIdx + 1][0] === triplableRanks[endIdx][0] + 1) {
+      endIdx++;
+    }
+    for (let len = 3; len <= endIdx - startIdx + 1; len++) {
+      const rankSlice = triplableRanks.slice(startIdx, startIdx + len);
+      generateTripleSeqCombos(rankSlice, 0, [], combos);
+    }
+  }
+
   return combos;
 }
 
@@ -243,6 +285,25 @@ function generateDoubleSeqCombos(rankGroups, idx, current, result) {
       generateDoubleSeqCombos(rankGroups, idx + 1, current, result);
       current.pop();
       current.pop();
+    }
+  }
+}
+
+function generateTripleSeqCombos(rankGroups, idx, current, result) {
+  if (idx === rankGroups.length) {
+    result.push(new Combo([...current], COMBO_TYPES.TRIPLE_SEQ));
+    return;
+  }
+  const [, cards] = rankGroups[idx];
+  for (let i = 0; i < cards.length; i++) {
+    for (let j = i + 1; j < cards.length; j++) {
+      for (let k = j + 1; k < cards.length; k++) {
+        current.push(cards[i], cards[j], cards[k]);
+        generateTripleSeqCombos(rankGroups, idx + 1, current, result);
+        current.pop();
+        current.pop();
+        current.pop();
+      }
     }
   }
 }

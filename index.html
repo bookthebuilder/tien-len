@@ -20,10 +20,16 @@
     <div id="header">
       <h1>Tiến Lên</h1>
       <div id="header-right">
-        <span id="score-display" style="font-size:0.8rem;color:var(--text-secondary)"></span>
-        <button class="header-btn" id="settings-btn">&#9881; Settings</button>
+        <span id="score-display"></span>
+        <button class="header-btn" id="settings-btn">Settings</button>
       </div>
     </div>
+
+    <!-- Turn banner -->
+    <div id="turn-banner" class="hidden">Your Turn</div>
+
+    <!-- Toast container -->
+    <div id="toast-container"></div>
 
     <!-- Player panels -->
     <div class="player-panel" data-pos="0" id="panel-0"></div>
@@ -48,8 +54,8 @@
 
     <!-- Action buttons -->
     <div id="actions">
-      <button class="action-btn" id="pass-btn">Pass</button>
-      <button class="action-btn" id="play-btn">Play</button>
+      <button class="action-btn" id="pass-btn">Pass <kbd>Space</kbd></button>
+      <button class="action-btn" id="play-btn">Play <kbd>Enter</kbd></button>
     </div>
 
     <!-- Message overlay -->
@@ -62,7 +68,10 @@
     <div id="game-over-overlay" class="hidden">
       <div id="game-over-title"></div>
       <div id="game-over-results"></div>
-      <button id="new-game-btn">Play Again</button>
+      <div id="game-over-actions">
+        <button id="new-game-btn">Play Again</button>
+        <button id="back-menu-btn" class="menu-btn secondary">Main Menu</button>
+      </div>
     </div>
 
     <!-- Handoff screen -->
@@ -114,12 +123,15 @@
 
     <!-- Main Menu -->
     <div id="menu-overlay">
+      <div class="menu-card-deco left"></div>
+      <div class="menu-card-deco right"></div>
       <h1>Tiến Lên</h1>
-      <h2>Vietnamese Poker</h2>
+      <p class="menu-subtitle">Vietnamese Poker</p>
       <div class="menu-buttons">
         <button class="menu-btn" id="local-play-btn">Local Play</button>
-        <button class="menu-btn" id="create-room-btn">Create Room</button>
-        <button class="menu-btn" id="join-room-btn">Join Room</button>
+        <div class="menu-divider"><span>or play online</span></div>
+        <button class="menu-btn outline" id="create-room-btn">Create Room</button>
+        <button class="menu-btn outline" id="join-room-btn">Join Room</button>
       </div>
     </div>
 
@@ -165,6 +177,7 @@
     <!-- Lobby Screen -->
     <div id="lobby-overlay" class="hidden">
       <h2>Room: <span id="lobby-room-code"></span></h2>
+      <button id="lobby-copy-btn" class="copy-btn" title="Copy room code">Copy</button>
       <div id="lobby-share">Share this code with friends</div>
       <div id="lobby-players"></div>
       <div id="lobby-status"></div>

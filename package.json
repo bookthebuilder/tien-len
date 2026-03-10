@@ -1,0 +1,11 @@
+{
+  "name": "tien-len",
+  "private": true,
+  "scripts": {
+    "dev": "partykit dev",
+    "deploy": "partykit deploy"
+  },
+  "devDependencies": {
+    "partykit": "^0.0.115"
+  }
+}

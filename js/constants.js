@@ -17,6 +17,7 @@ export const COMBO_TYPES = {
   QUAD: 'quad',
   STRAIGHT: 'straight',
   DOUBLE_SEQ: 'double_sequence',
+  TRIPLE_SEQ: 'triple_seq',
 };
 
 export const GAME_PHASES = {

@@ -15,14 +15,28 @@ export class Rules {
     }
     if (pairCount >= 6) return { type: 'six_pairs', label: 'Six Pairs!' };
 
-    // Dragon: 3 through A (12 consecutive ranks, no 2)
+    // Dragon: 3 through 2 (all 13 ranks: 3 4 5 6 7 8 9 10 J Q K A 2)
+    const twosInHand = hand.filter(c => c.isTwo);
     const uniqueNonTwoRanks = new Set(hand.filter(c => !c.isTwo).map(c => c.rankValue));
-    if (uniqueNonTwoRanks.size >= 12) {
+    if (twosInHand.length >= 1 && uniqueNonTwoRanks.size >= 12) {
       let isDragon = true;
       for (let i = 0; i < 12; i++) {
         if (!uniqueNonTwoRanks.has(i)) { isDragon = false; break; }
       }
-      if (isDragon) return { type: 'dragon', label: 'Dragon! (3 to Ace)' };
+      if (isDragon) return { type: 'dragon', label: 'Dragon! (3 to 2)' };
+    }
+
+    // Three triples in sequence (instant win)
+    const tripleableRanks = [...byRank.entries()]
+      .filter(([rv, group]) => group.length >= 3 && rv < 12)
+      .sort(([a], [b]) => a - b);
+    for (let i = 0; i <= tripleableRanks.length - 3; i++) {
+      const [r0] = tripleableRanks[i];
+      const [r1] = tripleableRanks[i + 1];
+      const [r2] = tripleableRanks[i + 2];
+      if (r1 === r0 + 1 && r2 === r1 + 1) {
+        return { type: 'triple_sequence', label: 'Three Triples in Sequence!' };
+      }
     }
 
     return null;

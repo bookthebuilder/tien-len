@@ -2,7 +2,7 @@ import { GAME_PHASES } from './constants.js';
 import { Deck } from './deck.js';
 import { Player } from './player.js';
 import { Rules } from './rules.js';
-import { classify, canBeat } from './combo.js';
+import { classify, canBeat, is2Combo } from './combo.js';
 import { bus } from './events.js';
 
 export class GameState {
@@ -92,6 +92,9 @@ export class GameState {
     // Execute the play
     const player = this.players[playerIndex];
     player.removeCards(cards);
+    // Stamp chop context so double-chop resolution works
+    combo.isChop = this.currentTrick !== null &&
+      (is2Combo(this.currentTrick) || this.currentTrick.isChop === true);
     this.currentTrick = combo;
     this.trickLeaderIndex = playerIndex;
     this.trickPasses = new Set();
